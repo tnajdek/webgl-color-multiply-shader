@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Color Multiply Shader</title>
+	<style>
+		html, body {
+			height: 100%;
+			text-align: center;
+			padding:0;
+			margin: 0;
+		}
+		canvas {
+			width:100%;
+		}
+		small {
+			display:block;
+			margin: 0 auto;
+			width:80%;
+			text-align: center;
+		}
+
+		small + small {
+			margin-top: 1em;
+		}
+
+		.inputs {
+			width:300px;
+			margin: 0 auto;
+			text-align: right;
+		}
+
+	</style>
+</head>
+<body>
+	<script id="2d-vertex-shader" type="x-shader/x-vertex">
+		attribute vec2 a_position;
+		attribute vec2 a_texCoord;
+
+		uniform vec2 u_resolution;
+
+		varying vec2 v_texCoord;
+
+		void main() {
+			// convert the rectangle from pixels to 0.0 to 1.0
+			vec2 zeroToOne = a_position / u_resolution;
+
+			// convert from 0->1 to 0->2
+			vec2 zeroToTwo = zeroToOne * 2.0;
+
+			// convert from 0->2 to -1->+1 (clipspace)
+			vec2 clipSpace = zeroToTwo - 1.0;
+
+			gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+
+			// pass the texCoord to the fragment shader
+			// The GPU will interpolate this value between points.
+			v_texCoord = a_texCoord;
+		}
+	</script>
+	<script id="2d-fragment-shader" type="x-shader/x-fragment">
+		precision mediump float;
+
+		// our texture
+		uniform sampler2D u_image;
+		uniform float r;
+		uniform float g;
+		uniform float b;
+		uniform float a;
+
+		// the texCoords passed in from the vertex shader.
+		varying vec2 v_texCoord;
+
+		void main() {
+			vec4 color = texture2D(u_image, v_texCoord);
+			vec4 mbc = vec4(r, g, b, a);
+			gl_FragColor = color * mbc;
+		}
+	</script>
+	
+	<div class="inputs">
+		<label for="red">Red</label>
+		<input type="number" min="0" max="255" id="red" placeholder="0-255" />
+		<br />
+		
+		<label for="blue">Blue</label>
+		<input type="number" min="0" max="255" id="blue" placeholder="0-255" />
+		<br />
+
+		<label for="green">Green</label>
+		<input type="number" min="0" max="255" id="green" placeholder="0-255" />
+		<br />
+	</div>
+	<br />
+	<br />
+
+	<small>
+		Color Multiply Shader realsed by <a href="http://doppnet.com">Tom Najdek</a>.
+	</small>
+	<small>
+		Lots of credits to Gregg Tavares for an <a href="http://greggman.github.io/webgl-fundamentals/webgl/lessons/webgl-how-it-works.html">amazing tutorial</a>.
+	</small>
+	<small> 
+		Rookery Stairs in Black and White released under <a href="http://creativecommons.org/licenses/by-nc/2.0/deed.en">CC BY-NC 2.0</a> by <a href="http://www.flickr.com/photos/cjsmithphotography/with/6412500507/">Chris Smith</a>.
+	<small>
+	<a href="https://github.com/tnajdek"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png" alt="Fork me on GitHub"></a>
+	<script src="gl.js"></script>
+</body>
+</html>
